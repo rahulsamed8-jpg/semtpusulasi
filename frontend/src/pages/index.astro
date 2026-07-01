@@ -1,0 +1,281 @@
+---
+import Layout from '../layouts/Layout.astro';
+import data from '../data/turizm_data.json';
+import AdSensePlaceholder from '../components/AdSensePlaceholder.astro';
+
+// Kategoriler için temsili fotoğrafları JSON'dan bulalım veya Unsplash'ten çekelim
+const categoryImages = {
+  "Plajlar": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1600&auto=format&fit=crop",
+  "Gezilecek Yerler": data.find(i => i.category === "Gezilecek Yerler")?.photos[0] || "https://images.unsplash.com/photo-1533050487297-09b450131914?q=80&w=1600&auto=format&fit=crop",
+  "Mekanlar": "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=1600&auto=format&fit=crop",
+  "Oteller": "https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=1600&auto=format&fit=crop"
+};
+
+// En popüler 3 mekanı (Puana göre) ana sayfada göstermek için alalım
+const popularPlaces = [...data].sort((a, b) => b.rating - a.rating).slice(0, 3);
+
+// Yeni Eklenenler (Son 4 mekan)
+const recentPlaces = [...data].slice(-4);
+
+// Benzersiz Bölgeler ve Rastgele Fotoğrafları
+const uniqueRegionsList = [...new Set(data.map(item => item.region))].filter(Boolean);
+const regionsWithPhotos = uniqueRegionsList.map(region => {
+    const regionPlaces = data.filter(item => item.region === region && item.photos && item.photos.length > 0);
+    const photo = regionPlaces.length > 0 ? regionPlaces[0].photos[0] : "https://images.unsplash.com/photo-1501785888041-af3ef285b470?q=80&w=800&auto=format&fit=crop";
+    return { name: region, photo };
+});
+---
+
+<Layout title="SemtPusulası - Bölgendeki En İyileri Keşfet" description="Bölgendeki gezilecek yerleri, gizli plajları, lüks otelleri ve lezzetli mekanları keşfet.">
+    
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+        <!-- HERO SECTION (Devasa Arka Plan ve Arama) -->
+        <div class="relative w-full h-[550px] md:h-[650px] rounded-3xl overflow-hidden shadow-2xl mb-16 mt-4">
+            <!-- Arka Plan Resmi (İlk Mekanın Resmi Veya Standart) -->
+            <img src={categoryImages["Gezilecek Yerler"]} alt="Sığacık Manzara" class="absolute inset-0 w-full h-full object-cover" />
+            
+            <!-- Karartma Efekti (Overlay) -->
+            <div class="absolute inset-0 bg-gradient-to-b from-slate-900/60 via-slate-900/30 to-slate-900/90"></div>
+            
+            <!-- İçerik -->
+            <div class="relative h-full flex flex-col items-center justify-center px-4 text-center">
+                <h1 class="text-5xl md:text-6xl lg:text-7xl font-extrabold text-white mb-6 drop-shadow-lg tracking-tight">
+                    Bölgendeki En İyileri <span class="text-blue-400">Keşfet</span>
+                </h1>
+                <p class="text-lg md:text-xl text-slate-200 mb-10 max-w-2xl drop-shadow-md font-light">
+                    Gezilecek yerlerden gizli plajlara, lüks otellerden lezzetli mekanlara kadar aradığınız her şey tek tıkla burada.
+                </p>
+                
+                <!-- Glassmorphism Büyük Arama Çubuğu (Canlı Arama Entegreli) -->
+                <div class="relative w-full max-w-3xl z-30">
+                    <form action="/arama" method="GET" class="w-full bg-white/20 backdrop-blur-md p-2 rounded-2xl border border-white/30 shadow-2xl flex focus-within:ring-4 focus-within:ring-blue-500/50 transition-all">
+                        <input type="text" name="q" id="hero-search-input" autocomplete="off" placeholder="Mekan, plaj, otel ara (Örn: Teos, Sığacık)..." class="w-full bg-transparent text-white placeholder-slate-200 text-lg px-6 py-4 focus:outline-none" />
+                        <button type="submit" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-8 py-4 rounded-xl transition-colors shadow-lg">
+                            Ara
+                        </button>
+                    </form>
+                    
+                    <!-- Canlı Arama Sonuçları (Dropdown) -->
+                    <div id="hero-search-results" class="absolute w-full mt-2 bg-white rounded-xl shadow-2xl overflow-hidden hidden max-h-80 overflow-y-auto text-left border border-slate-100 divide-y divide-slate-100">
+                        <!-- JS ile doldurulacak -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- BÖLGELERE GÖRE KEŞFET (YENİ) -->
+        <div class="mb-16">
+            <div class="flex items-center justify-between mb-8">
+                <h2 class="text-3xl font-bold text-slate-900 tracking-tight">Bölgelere Göre Keşfet</h2>
+            </div>
+            
+            <div class="flex overflow-x-auto pb-6 gap-6 snap-x custom-scrollbar">
+                {regionsWithPhotos.map(region => (
+                    <a href={`/arama?q=${region.name}`} class="snap-start shrink-0 group flex flex-col items-center gap-3">
+                        <div class="w-28 h-28 md:w-36 md:h-36 rounded-full overflow-hidden shadow-md group-hover:shadow-xl transition-all duration-300 ring-4 ring-transparent group-hover:ring-blue-100">
+                            <img src={region.photo} alt={region.name} class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                        </div>
+                        <span class="font-bold text-slate-700 group-hover:text-blue-600 transition-colors text-center text-sm md:text-base">{region.name}</span>
+                    </a>
+                ))}
+            </div>
+        </div>
+
+        <!-- ANA SAYFA REKLAM ALANI 1 -->
+        <AdSensePlaceholder type="horizontal" className="mb-16" />
+
+        <!-- KATEGORİLER (Büyük, Geniş Kartlar) -->
+        <div class="mb-24">
+            <div class="flex items-center justify-between mb-8">
+                <h2 class="text-3xl font-bold text-slate-900 tracking-tight">Nereyi Keşfetmek İstersiniz?</h2>
+            </div>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {Object.entries(categoryImages).map(([cat, img]) => (
+                    <a href={`/kategori/${cat.toLowerCase().replace(' ', '-')}`} class="group relative h-72 rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
+                        <img src={img} alt={cat} loading="lazy" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                        <div class="absolute inset-0 bg-gradient-to-t from-slate-900/95 via-slate-900/40 to-transparent"></div>
+                        <div class="absolute bottom-0 left-0 p-6 w-full">
+                            <h3 class="text-2xl font-bold text-white mb-2 group-hover:text-blue-300 transition-colors">{cat}</h3>
+                            <p class="text-blue-200 text-sm opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-4 group-hover:translate-y-0 font-medium flex items-center gap-2">
+                                Kategoriyi İncele <span class="text-lg">→</span>
+                            </p>
+                        </div>
+                    </a>
+                ))}
+            </div>
+        </div>
+
+        <!-- POPÜLER MEKANLAR VİTRİNİ -->
+        <div class="mb-24">
+            <div class="flex items-center justify-between mb-8">
+                <div>
+                    <h2 class="text-3xl font-bold text-slate-900 tracking-tight mb-2">Popüler Gözdeler</h2>
+                    <p class="text-slate-500">Kullanıcıların en yüksek puan verdiği efsanevi mekanlar</p>
+                </div>
+                <a href="/arama" class="hidden md:flex items-center gap-2 text-blue-600 font-bold hover:text-blue-700 transition-colors">
+                    Tümünü Gör <span>→</span>
+                </a>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                {popularPlaces.map((item) => (
+                    <a href={`/mekan/${item.slug}`} class="bg-white rounded-2xl shadow-md border border-slate-100 overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group flex flex-col">
+                        <div class="relative h-60 overflow-hidden shrink-0">
+                            {item.photos && item.photos.length > 0 ? (
+                                <img src={item.photos[0]} alt={item.name} loading="lazy" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                            ) : (
+                                <div class="w-full h-full bg-slate-200 flex items-center justify-center">Fotoğraf Yok</div>
+                            )}
+                            <div class="absolute top-4 right-4 bg-white/95 backdrop-blur px-3 py-1.5 rounded-lg font-bold text-slate-800 shadow-sm flex items-center gap-1">
+                                <span class="text-yellow-500">⭐</span> {item.rating}
+                            </div>
+                        </div>
+                        <div class="p-6 flex flex-col flex-grow">
+                            <div class="text-xs font-bold text-blue-600 mb-2 uppercase tracking-wider bg-blue-50 inline-block px-2 py-1 rounded w-max">{item.category}</div>
+                            <h3 class="text-xl font-bold text-slate-900 mb-2 group-hover:text-blue-600 transition-colors line-clamp-1">{item.name}</h3>
+                            <p class="text-slate-500 text-sm line-clamp-2 mb-4 flex-grow">{item.address}</p>
+                            <div class="flex items-center text-sm font-medium text-slate-400 mt-auto">
+                                <span>{item.reviews_count} Google Değerlendirmesi</span>
+                            </div>
+                        </div>
+                    </a>
+                ))}
+            </div>
+        </div>
+
+        <!-- YENİ EKLENENLER VİTRİNİ (YENİ) -->
+        <div class="mb-24 bg-slate-900 rounded-3xl p-8 md:p-12 relative overflow-hidden">
+            <!-- Dekoratif Arka Plan Çemberleri -->
+            <div class="absolute top-0 right-0 -mr-20 -mt-20 w-64 h-64 rounded-full bg-blue-600/20 blur-3xl"></div>
+            <div class="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 rounded-full bg-purple-600/20 blur-3xl"></div>
+            
+            <div class="relative z-10 flex items-center justify-between mb-10">
+                <div>
+                    <h2 class="text-3xl font-bold text-white tracking-tight mb-2">Sisteme Yeni Eklenenler</h2>
+                    <p class="text-slate-400">Platformumuzda yerini alan en taze mekanları ilk sen keşfet.</p>
+                </div>
+            </div>
+            
+            <div class="relative z-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {recentPlaces.map((item) => (
+                    <a href={`/mekan/${item.slug}`} class="bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700/50 overflow-hidden hover:bg-slate-800 transition-all duration-300 group">
+                        <div class="relative h-40 overflow-hidden">
+                            {item.photos && item.photos.length > 0 ? (
+                                <img src={item.photos[0]} alt={item.name} loading="lazy" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                            ) : (
+                                <div class="w-full h-full bg-slate-700 flex items-center justify-center text-slate-500">Yok</div>
+                            )}
+                        </div>
+                        <div class="p-5">
+                            <div class="text-xs font-semibold text-blue-400 mb-1">{item.region}</div>
+                            <h3 class="text-lg font-bold text-white line-clamp-1 group-hover:text-blue-300 transition-colors">{item.name}</h3>
+                        </div>
+                    </a>
+                ))}
+            </div>
+        </div>
+
+        <!-- BÜLTEN ABONELİĞİ (YENİ) -->
+        <div class="mb-20 bg-blue-50 rounded-3xl p-8 md:p-16 flex flex-col items-center text-center border border-blue-100">
+            <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-3xl mb-6 shadow-inner">
+                ✉️
+            </div>
+            <h2 class="text-3xl md:text-4xl font-extrabold text-slate-900 mb-4 tracking-tight">Gizli Cennetleri Kaçırmayın!</h2>
+            <p class="text-lg text-slate-600 mb-8 max-w-2xl">
+                Bölgedeki en iyi mekan tavsiyeleri, gizli kalmış koylar ve özel indirimlerden ilk siz haberdar olun. Sadece en iyi içerikleri gönderiyoruz.
+            </p>
+            <form class="w-full max-w-md flex flex-col sm:flex-row gap-3">
+                <input type="email" placeholder="E-posta adresiniz..." required class="flex-grow px-6 py-4 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-slate-700 shadow-sm" />
+                <button type="button" onclick="alert('Bültene başarıyla abone oldunuz! (Demo)')" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-8 py-4 rounded-xl shadow-md transition-colors whitespace-nowrap">
+                    Abone Ol
+                </button>
+            </form>
+            <p class="text-xs text-slate-400 mt-4">İstediğiniz zaman abonelikten çıkabilirsiniz. Bilgileriniz %100 güvendedir.</p>
+        </div>
+    </div>
+
+</Layout>
+
+<style>
+    /* Yatay kaydırma çubuğunu gizlemek için */
+    .hide-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+    .hide-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+</style>
+
+<script is:inline define:vars={{ searchData: data }}>
+    // Canlı Arama (Live Search) JS Mantığı
+    document.addEventListener('DOMContentLoaded', () => {
+        const searchInput = document.getElementById('hero-search-input');
+        const resultsContainer = document.getElementById('hero-search-results');
+        
+        if (!searchInput || !resultsContainer) return;
+
+        // Tıklama ile dışarıyı kapatma
+        document.addEventListener('click', (e) => {
+            if (!searchInput.contains(e.target) && !resultsContainer.contains(e.target)) {
+                resultsContainer.classList.add('hidden');
+            }
+        });
+
+        searchInput.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase().trim();
+            
+            // Kullanıcının önerisine göre: "2 veya 3 harf yazınca"
+            if (query.length < 2) {
+                resultsContainer.classList.add('hidden');
+                return;
+            }
+            
+            // Datada filtreleme (Adı, adresi veya kategorisi içinde geçenler)
+            const matches = searchData.filter(item => 
+                (item.name && item.name.toLowerCase().includes(query)) ||
+                (item.region && item.region.toLowerCase().includes(query)) ||
+                (item.category && item.category.toLowerCase().includes(query))
+            ).slice(0, 6); // Max 6 sonuç göster
+            
+            if (matches.length > 0) {
+                resultsContainer.innerHTML = matches.map(item => `
+                    <a href="/mekan/${item.slug}" class="flex items-center gap-3 p-3 hover:bg-slate-50 transition-colors">
+                        <div class="w-12 h-12 rounded-lg bg-slate-200 overflow-hidden shrink-0">
+                            ${item.photos && item.photos.length > 0 
+                                ? `<img src="${item.photos[0]}" class="w-full h-full object-cover" />` 
+                                : `<span class="flex items-center justify-center h-full text-xs text-slate-400">Yok</span>`}
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="font-bold text-slate-800 text-sm line-clamp-1">${item.name}</span>
+                            <span class="text-xs text-slate-500">${item.region} • <span class="text-blue-600">${item.category}</span></span>
+                        </div>
+                    </a>
+                `).join('');
+                
+                // "Tüm sonuçları gör" butonu
+                resultsContainer.innerHTML += `
+                    <button type="submit" class="w-full p-3 bg-slate-50 text-blue-600 text-sm font-bold hover:bg-blue-50 transition-colors text-center border-t border-slate-100">
+                        "${e.target.value}" için tüm sonuçları gör →
+                    </button>
+                `;
+                resultsContainer.classList.remove('hidden');
+            } else {
+                resultsContainer.innerHTML = `
+                    <div class="p-4 text-center text-sm text-slate-500">
+                        Sonuç bulunamadı. Lütfen başka kelime deneyin.
+                    </div>
+                `;
+                resultsContainer.classList.remove('hidden');
+            }
+        });
+        
+        // Arama kutusuna tıklandığında (ve içi doluysa) tekrar göster
+        searchInput.addEventListener('focus', (e) => {
+            if (e.target.value.length >= 2) {
+                resultsContainer.classList.remove('hidden');
+            }
+        });
+    });
+</script>

@@ -1,0 +1,218 @@
+---
+import '../styles/global.css';
+import CookieBanner from '../components/CookieBanner.astro';
+import data from '../data/turizm_data.json'; // Canlı arama için veriyi ekliyoruz
+const { title, description, image = 'https://lh5.googleusercontent.com/p/AF1QipN3u23yBntxQxY3Yw_A3nJzWw-g9M7M-2k_nB_=w800-h400-k-no' } = Astro.props;
+
+// Canonical URL oluşturma
+const site = 'https://semtpusulasi.com';
+const canonicalURL = new URL(Astro.url.pathname, site);
+---
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="description" content={description} />
+    <title>{title}</title>
+
+    <!-- Canonical URL -->
+    <link rel="canonical" href={canonicalURL} />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalURL} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={image} />
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content={canonicalURL} />
+    <meta property="twitter:title" content={title} />
+    <meta property="twitter:description" content={description} />
+    <meta property="twitter:image" content={image} />
+
+    <!-- Google Analytics (GA4) Şablonu -->
+    <!-- 
+      Siteye GA4 bağladığınızda aşağıdaki kodun başındaki/sonundaki yorum satırlarını kaldırıp
+      G-XXXXXXXXXX kısmına kendi ID'nizi yazın.
+    -->
+    <!-- 
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-XXXXXXXXXX');
+    </script>
+    -->
+</head>
+<body class="bg-slate-50 text-slate-900 font-sans min-h-screen flex flex-col">
+    <!-- Header -->
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <a href="/" class="text-2xl font-extrabold text-blue-600 tracking-tight">SemtPusulası</a>
+            
+            <!-- Arama Butonu (Masaüstü) - Canlı Arama Destekli -->
+            <div class="flex-1 max-w-md mx-8 relative hidden md:block z-50">
+                <form action="/arama" method="GET" class="relative">
+                    <input type="text" name="q" id="header-search-input" autocomplete="off" placeholder="Mekan, plaj, otel ara..." class="w-full bg-slate-100 rounded-xl py-2 pl-4 pr-10 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all text-sm font-medium" />
+                    <button type="submit" class="absolute right-3 top-2 text-slate-400 hover:text-blue-600 transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    </button>
+                </form>
+                
+                <!-- Canlı Arama Sonuçları (Header) -->
+                <div id="header-search-results" class="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-2xl overflow-hidden hidden max-h-[400px] overflow-y-auto text-left border border-slate-100 divide-y divide-slate-100">
+                    <!-- JS ile doldurulacak -->
+                </div>
+            </div>
+
+            <nav class="hidden md:flex space-x-6 items-center">
+                <a href="/" class="text-sm text-slate-600 hover:text-blue-600 font-bold transition-colors">Ana Sayfa</a>
+                <a href="/hakkimizda" class="text-sm text-slate-600 hover:text-blue-600 font-bold transition-colors">Hakkımızda</a>
+                <a href="/iletisim" class="bg-blue-50 text-blue-600 px-4 py-2 rounded-lg text-sm font-bold hover:bg-blue-100 transition-colors">İletişim</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow w-full">
+        <slot />
+    </main>
+
+    <!-- Footer (Premium Tasarım) -->
+    <footer class="bg-[#0B1120] text-slate-300 py-16 mt-auto border-t-4 border-blue-600">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-4 gap-12">
+            <!-- Hakkında & Logo -->
+            <div class="col-span-1 md:col-span-1">
+                <h3 class="text-2xl font-extrabold text-white mb-4 tracking-tight">SemtPusulası</h3>
+                <p class="text-sm text-slate-400 leading-relaxed mb-6">
+                    Türkiye'nin en kapsamlı, güncel ve güvenilir yerel rehberi. Keşfedilmeyi bekleyen binlerce mekanı sizin için listeliyoruz.
+                </p>
+                <!-- Sosyal Medya İkonları -->
+                <div class="flex gap-4">
+                    <a href="#" class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:bg-blue-600 hover:text-white transition-all transform hover:-translate-y-1">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"/></svg>
+                    </a>
+                    <a href="#" class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:bg-pink-600 hover:text-white transition-all transform hover:-translate-y-1">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Hızlı Menü -->
+            <div>
+                <h4 class="text-lg font-bold text-white mb-6 uppercase tracking-wider text-sm">Hızlı Menü</h4>
+                <ul class="space-y-3 text-sm font-medium text-slate-400">
+                    <li><a href="/" class="hover:text-blue-400 transition-colors flex items-center gap-2"><span class="text-blue-600">▪</span> Ana Sayfa</a></li>
+                    <li><a href="/kategori/oteller" class="hover:text-blue-400 transition-colors flex items-center gap-2"><span class="text-blue-600">▪</span> En İyi Oteller</a></li>
+                    <li><a href="/kategori/plajlar" class="hover:text-blue-400 transition-colors flex items-center gap-2"><span class="text-blue-600">▪</span> Gizli Plajlar</a></li>
+                    <li><a href="/kategori/mekanlar" class="hover:text-blue-400 transition-colors flex items-center gap-2"><span class="text-blue-600">▪</span> Popüler Mekanlar</a></li>
+                </ul>
+            </div>
+
+            <!-- İletişim Bilgileri (YENİ) -->
+            <div>
+                <h4 class="text-lg font-bold text-white mb-6 uppercase tracking-wider text-sm">İletişim</h4>
+                <ul class="space-y-4 text-sm text-slate-400">
+                    <li class="flex items-start gap-3">
+                        <span class="mt-0.5 text-blue-500">📍</span> 
+                        <span>Turizm Cd. No: 123<br/>Seferihisar, İzmir</span>
+                    </li>
+                    <li class="flex items-center gap-3 hover:text-white transition-colors cursor-pointer">
+                        <span class="text-blue-500">📞</span> 
+                        <span>+90 (555) 123 45 67</span>
+                    </li>
+                    <li class="flex items-center gap-3 hover:text-white transition-colors cursor-pointer">
+                        <span class="text-blue-500">✉️</span> 
+                        <span>merhaba@semtpusulasi.com</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Yasal -->
+            <div>
+                <h4 class="text-lg font-bold text-white mb-6 uppercase tracking-wider text-sm">Yasal</h4>
+                <ul class="space-y-3 text-sm font-medium text-slate-400">
+                    <li><a href="/gizlilik" class="hover:text-white transition-colors">Gizlilik Politikası</a></li>
+                    <li><a href="/kullanim-kosullari" class="hover:text-white transition-colors">Kullanım Koşulları</a></li>
+                    <li><a href="/cerezler" class="hover:text-white transition-colors">Çerez Politikası</a></li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 pt-8 border-t border-slate-800/50 text-sm flex flex-col md:flex-row items-center justify-between text-slate-500">
+            <p>&copy; {new Date().getFullYear()} SemtPusulası. Tüm hakları saklıdır.</p>
+            <p class="mt-2 md:mt-0">Made with ❤️ in Turkey</p>
+        </div>
+    </footer>
+    <CookieBanner />
+
+    <!-- Header Canlı Arama JS Mantığı -->
+    <script is:inline define:vars={{ searchData: data }}>
+        document.addEventListener('DOMContentLoaded', () => {
+            const searchInput = document.getElementById('header-search-input');
+            const resultsContainer = document.getElementById('header-search-results');
+            
+            if (!searchInput || !resultsContainer) return;
+
+            document.addEventListener('click', (e) => {
+                if (!searchInput.contains(e.target) && !resultsContainer.contains(e.target)) {
+                    resultsContainer.classList.add('hidden');
+                }
+            });
+
+            searchInput.addEventListener('input', (e) => {
+                const query = e.target.value.toLowerCase().trim();
+                
+                if (query.length < 2) {
+                    resultsContainer.classList.add('hidden');
+                    return;
+                }
+                
+                const matches = searchData.filter(item => 
+                    (item.name && item.name.toLowerCase().includes(query)) ||
+                    (item.region && item.region.toLowerCase().includes(query)) ||
+                    (item.category && item.category.toLowerCase().includes(query))
+                ).slice(0, 5);
+                
+                if (matches.length > 0) {
+                    resultsContainer.innerHTML = matches.map(item => `
+                        <a href="/mekan/${item.slug}" class="flex items-center gap-3 p-3 hover:bg-slate-50 transition-colors">
+                            <div class="w-10 h-10 rounded bg-slate-200 overflow-hidden shrink-0">
+                                ${item.photos && item.photos.length > 0 
+                                    ? `<img src="${item.photos[0]}" class="w-full h-full object-cover" />` 
+                                    : `<span class="flex items-center justify-center h-full text-[10px] text-slate-400">Yok</span>`}
+                            </div>
+                            <div class="flex flex-col">
+                                <span class="font-bold text-slate-800 text-sm line-clamp-1">${item.name}</span>
+                                <span class="text-xs text-slate-500">${item.region}</span>
+                            </div>
+                        </a>
+                    `).join('');
+                    
+                    resultsContainer.innerHTML += `
+                        <button type="submit" class="w-full p-2 bg-slate-50 text-blue-600 text-xs font-bold hover:bg-blue-50 transition-colors border-t border-slate-100">
+                            Tüm sonuçları gör →
+                        </button>
+                    `;
+                    resultsContainer.classList.remove('hidden');
+                } else {
+                    resultsContainer.innerHTML = `
+                        <div class="p-3 text-center text-xs text-slate-500">Sonuç bulunamadı.</div>
+                    `;
+                    resultsContainer.classList.remove('hidden');
+                }
+            });
+            
+            searchInput.addEventListener('focus', (e) => {
+                if (e.target.value.length >= 2) {
+                    resultsContainer.classList.remove('hidden');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

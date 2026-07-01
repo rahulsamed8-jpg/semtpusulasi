@@ -1,0 +1,227 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import data from '../../data/turizm_data.json';
+import AdSensePlaceholder from '../../components/AdSensePlaceholder.astro';
+
+export async function getStaticPaths() {
+// ... existing getStaticPaths ...
+  const categories = [...new Set(data.map((item) => item.category))];
+  
+  return categories.map((category) => {
+    const slug = category.toLowerCase().replace(' ', '-');
+    const items = data.filter((item) => item.category === category);
+    
+    return {
+      params: { kategori: slug },
+      props: { categoryName: category, items },
+    };
+  });
+}
+
+const { categoryName, items } = Astro.props;
+const uniqueRegions = [...new Set(items.map((item) => item.region))].filter(Boolean).sort();
+---
+
+<Layout title={`${categoryName} | SemtPusulası`} description={`Bölgenizdeki en iyi ${categoryName} listesi ve detayları.`}>
+    <div class="max-w-6xl mx-auto mt-8 px-4 mb-24">
+        
+        <!-- Başlık ve Filtre Çubuğu Alanı -->
+        <div class="mb-10">
+            <h1 class="text-3xl md:text-5xl font-extrabold text-slate-900 mb-6 tracking-tight">En İyi {categoryName}</h1>
+            
+            <!-- Yatay Filtre Çubuğu (Glassmorphism & Şık Arayüz) -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 flex flex-col md:flex-row gap-4 items-center justify-between z-20 relative">
+                
+                <div class="flex flex-col md:flex-row gap-4 w-full md:w-auto">
+                    <!-- Bölge Filtresi -->
+                    <div class="relative w-full md:w-48">
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Bölge</label>
+                        <select id="filter-region" class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 block p-2.5 outline-none transition-all cursor-pointer font-medium appearance-none">
+                            <option value="all">Tüm Bölgeler</option>
+                            {uniqueRegions.map(region => (
+                                <option value={region}>{region}</option>
+                            ))}
+                        </select>
+                        <!-- Custom Select Icon -->
+                        <div class="pointer-events-none absolute inset-y-0 right-0 top-5 flex items-center px-2 text-slate-500">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </div>
+                    </div>
+
+                    <!-- Puan Filtresi -->
+                    <div class="relative w-full md:w-48">
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Minimum Puan</label>
+                        <select id="filter-rating" class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 block p-2.5 outline-none transition-all cursor-pointer font-medium appearance-none">
+                            <option value="0">Fark Etmez</option>
+                            <option value="4.5">4.5 ve Üzeri ⭐</option>
+                            <option value="4.0">4.0 ve Üzeri ⭐</option>
+                            <option value="3.0">3.0 ve Üzeri ⭐</option>
+                        </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 top-5 flex items-center px-2 text-slate-500">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sıralama -->
+                <div class="relative w-full md:w-56 mt-2 md:mt-0">
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Sırala</label>
+                    <select id="sort-by" class="w-full bg-blue-50 border border-blue-100 text-blue-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 block p-2.5 outline-none transition-all cursor-pointer font-bold appearance-none">
+                        <option value="default">Varsayılan</option>
+                        <option value="rating-desc">En Yüksek Puanlılar</option>
+                        <option value="reviews-desc">En Çok Değerlendirilenler</option>
+                    </select>
+                    <div class="pointer-events-none absolute inset-y-0 right-0 top-5 flex items-center px-2 text-blue-600">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </div>
+                </div>
+
+            </div>
+            
+            <!-- Sonuç Sayacı -->
+            <div class="mt-4 text-sm text-slate-500 font-medium" id="results-counter">
+                Toplam <span class="text-blue-600 font-bold">{items.length}</span> mekan listeleniyor.
+            </div>
+        </div>
+        
+        <!-- KATEGORİ REKLAM ALANI 1 -->
+        <AdSensePlaceholder type="horizontal" className="mb-10" />
+
+        <!-- Mekan Kartları Grid -->
+        <div id="places-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {items.map((item, index) => (
+                <a 
+                    href={`/mekan/${item.slug}`} 
+                    class="place-card bg-white rounded-2xl shadow-md border border-slate-100 overflow-hidden hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 group flex flex-col"
+                    data-region={item.region}
+                    data-rating={item.rating || 0}
+                    data-reviews={item.reviews_count || 0}
+                    data-index={index}
+                >
+                    <div class="relative h-56 bg-slate-100 overflow-hidden shrink-0">
+                        {item.photos && item.photos.length > 0 ? (
+                            <img src={item.photos[0]} alt={item.name} loading="lazy" decoding="async" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                        ) : (
+                            <div class="w-full h-full flex items-center justify-center text-slate-400 font-medium">Fotoğraf Yok</div>
+                        )}
+                        <!-- Puan Float Badge -->
+                        <div class="absolute top-4 right-4 bg-white/95 backdrop-blur-md px-3 py-1.5 rounded-xl text-sm font-bold text-slate-800 flex items-center gap-1.5 shadow-lg">
+                            <span class="text-yellow-500">⭐</span> {item.rating || "Yeni"}
+                        </div>
+                    </div>
+                    <div class="p-6 flex flex-col flex-grow">
+                        <div class="text-xs font-extrabold text-blue-600 mb-3 uppercase tracking-widest bg-blue-50 inline-block px-2 py-1 rounded w-max">
+                            {item.region || "Bilinmiyor"}
+                        </div>
+                        <h2 class="text-xl font-bold text-slate-900 mb-3 group-hover:text-blue-600 transition-colors line-clamp-1">{item.name}</h2>
+                        <p class="text-sm text-slate-500 line-clamp-2 mb-4 flex-grow">{item.address}</p>
+                        
+                        <div class="mt-auto pt-4 border-t border-slate-100 flex items-center justify-between">
+                            <div class="text-sm font-medium text-slate-500 flex items-center gap-1.5">
+                                <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"></path></svg>
+                                {item.reviews_count || 0} Yorum
+                            </div>
+                            <div class="text-blue-600 font-bold text-sm flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity transform translate-x-2 group-hover:translate-x-0">
+                                İncele <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            ))}
+        </div>
+        
+        <!-- Hiç Sonuç Bulunamadıysa Gösterilecek Uyarı -->
+        <div id="no-results" class="hidden text-center py-20 bg-slate-50 rounded-2xl border border-dashed border-slate-300 mt-8">
+            <div class="text-5xl mb-4">🔍</div>
+            <h3 class="text-xl font-bold text-slate-800 mb-2">Aramanıza uygun mekan bulunamadı</h3>
+            <p class="text-slate-500">Lütfen filtreleri esneterek tekrar deneyin.</p>
+        </div>
+    </div>
+</Layout>
+
+<script is:inline>
+    // İstemci tarafı (Client-side) çalışan JavaScript kodları
+    document.addEventListener('DOMContentLoaded', () => {
+        const filterRegion = document.getElementById('filter-region');
+        const filterRating = document.getElementById('filter-rating');
+        const sortBy = document.getElementById('sort-by');
+        const grid = document.getElementById('places-grid');
+        const noResults = document.getElementById('no-results');
+        const resultsCounter = document.getElementById('results-counter');
+        
+        // Tüm kartları bir Dizi (Array) olarak al (Sıralama için gerekli)
+        let cards = Array.from(document.querySelectorAll('.place-card'));
+
+        function applyFiltersAndSort() {
+            const selectedRegion = filterRegion.value;
+            const selectedRating = parseFloat(filterRating.value);
+            const selectedSort = sortBy.value;
+            
+            let visibleCount = 0;
+
+            // 1. FİLTRELEME
+            cards.forEach(card => {
+                const region = card.getAttribute('data-region');
+                const rating = parseFloat(card.getAttribute('data-rating'));
+                
+                let isMatch = true;
+                
+                // Bölge Kontrolü
+                if (selectedRegion !== 'all' && region !== selectedRegion) {
+                    isMatch = false;
+                }
+                
+                // Puan Kontrolü
+                if (rating < selectedRating) {
+                    isMatch = false;
+                }
+                
+                // Göster / Gizle
+                if (isMatch) {
+                    card.style.display = 'flex'; // Astro'da flex kullandık
+                    visibleCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            // Sonuç Sayacını Güncelle
+            resultsCounter.innerHTML = `Toplam <span class="text-blue-600 font-bold">${visibleCount}</span> mekan listeleniyor.`;
+            
+            if (visibleCount === 0) {
+                noResults.classList.remove('hidden');
+                grid.style.display = 'none';
+            } else {
+                noResults.classList.add('hidden');
+                grid.style.display = 'grid';
+            }
+
+            // 2. SIRALAMA
+            // Görünür veya gizli fark etmez, DOM elementlerini yeniden sıralıyoruz
+            cards.sort((a, b) => {
+                if (selectedSort === 'rating-desc') {
+                    const ratingA = parseFloat(a.getAttribute('data-rating'));
+                    const ratingB = parseFloat(b.getAttribute('data-rating'));
+                    return ratingB - ratingA;
+                } else if (selectedSort === 'reviews-desc') {
+                    const reviewsA = parseInt(a.getAttribute('data-reviews'));
+                    const reviewsB = parseInt(b.getAttribute('data-reviews'));
+                    return reviewsB - reviewsA;
+                } else {
+                    // Varsayılan sıralama (İlk yüklenen hali)
+                    const indexA = parseInt(a.getAttribute('data-index'));
+                    const indexB = parseInt(b.getAttribute('data-index'));
+                    return indexA - indexB;
+                }
+            });
+
+            // Sıralanmış kartları Grid içine tekrar yerleştir (DOM Update)
+            cards.forEach(card => grid.appendChild(card));
+        }
+
+        // Event Dinleyicileri Ekle
+        filterRegion.addEventListener('change', applyFiltersAndSort);
+        filterRating.addEventListener('change', applyFiltersAndSort);
+        sortBy.addEventListener('change', applyFiltersAndSort);
+    });
+</script>
