@@ -2,30 +2,24 @@
 import Layout from '../layouts/Layout.astro';
 ---
 
-<Layout title="Kullanım Koşulları - SemtPusulası" description="Sitemizin kullanım şartları.">
-    <div class="max-w-3xl mx-auto bg-white p-8 md:p-12 rounded-2xl shadow-sm border border-slate-100 mt-8">
-        <h1 class="text-3xl font-bold text-slate-900 mb-6">Kullanım Koşulları</h1>
+<Layout title="Kullanım Koşulları - Semt Pusulası" description="Semt Pusulası kullanım koşulları.">
+    <div class="max-w-4xl mx-auto px-4 py-16 sm:px-6 lg:px-8">
+        <h1 class="text-4xl font-extrabold text-slate-900 tracking-tight mb-8">Kullanım Koşulları</h1>
         
-        <div class="prose prose-slate max-w-none space-y-6 text-slate-600">
-            <h2 class="text-xl font-semibold text-slate-800">1. Kabul Edilme</h2>
-            <p>
-                Bu web sitesini ziyaret ederek ve kullanarak, aşağıda belirtilen tüm kullanım koşullarını kabul etmiş sayılırsınız. Şartların herhangi birini kabul etmiyorsanız, siteyi kullanmayı bırakmalısınız.
-            </p>
+        <div class="prose prose-blue max-w-none text-slate-600 space-y-6">
+            <p>Son güncellenme tarihi: {new Date().toLocaleDateString('tr-TR')}</p>
+            
+            <h2 class="text-2xl font-bold text-slate-800 mt-8 mb-4">1. Kabul Edilme</h2>
+            <p>Semt Pusulası web sitesini (semtpusulasi.com) ziyaret ederek, işbu Kullanım Koşulları'nı, tüm geçerli yasa ve yönetmelikleri kabul etmiş sayılırsınız. Bu şartların hiçbirine katılmıyorsanız, bu siteyi kullanmanız yasaktır.</p>
+            
+            <h2 class="text-2xl font-bold text-slate-800 mt-8 mb-4">2. Bilgi Doğruluğu</h2>
+            <p>Web sitemizde yer alan mekanlar, oteller, plajlar ve diğer işletmeler hakkındaki bilgiler tamamen bilgilendirme amaçlıdır. Semt Pusulası, bu bilgilerin eksiksiz, güncel veya tamamen doğru olduğunu garanti etmez. Ziyaretçiler bir mekana gitmeden önce kendi kontrollerini yapmaktan sorumludur.</p>
 
-            <h2 class="text-xl font-semibold text-slate-800">2. İçerik ve Sorumluluk Reddi</h2>
-            <p>
-                SemtPusulası'nda yer alan işletme bilgileri, adresler, telefon numaraları ve kullanıcı yorumları Google Places API dahil olmak üzere herkese açık kaynaklardan derlenmektedir. Bilgilerin güncelliği ve doğruluğu konusunda azami gayret gösterilse de, SemtPusulası olası veri hatalarından veya işletmelerin hizmet kalitesinden sorumlu tutulamaz.
-            </p>
-
-            <h2 class="text-xl font-semibold text-slate-800">3. Telif Hakkı</h2>
-            <p>
-                Sitede yer alan özel tasarım öğeleri, logolar ve yazılımların hakları SemtPusulası'na aittir. İzinsiz kopyalanması veya ticari amaçla kullanılması yasaktır. Mekan fotoğrafları ve kullanıcı yorumlarının telif hakları orijinal sahiplerine (Google ve kullanıcılar) aittir.
-            </p>
-
-            <h2 class="text-xl font-semibold text-slate-800">4. Değişiklik Hakları</h2>
-            <p>
-                SemtPusulası, önceden haber vermeksizin kullanım koşullarında, site altyapısında veya içeriklerde değişiklik yapma hakkını saklı tutar.
-            </p>
+            <h2 class="text-2xl font-bold text-slate-800 mt-8 mb-4">3. Sorumluluk Sınırları</h2>
+            <p>Semt Pusulası, sitede listelenen işletmelerle veya bu işletmelerden alınan hizmetlerle ilgili hiçbir sorumluluk kabul etmez. Mekanlarda yaşanabilecek herhangi bir olumsuzluk site yönetimini bağlamaz.</p>
+            
+            <h2 class="text-2xl font-bold text-slate-800 mt-8 mb-4">4. Fikri Mülkiyet</h2>
+            <p>Sitemizde yer alan özel içerikler, logolar ve tasarımlar Semt Pusulası'na aittir ve izinsiz kopyalanamaz, çoğaltılamaz veya başka bir projede kullanılamaz.</p>
         </div>
     </div>
 </Layout>

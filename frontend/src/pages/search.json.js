@@ -1,0 +1,20 @@
+import dataRaw from '../data/turizm_data.json';
+const data = dataRaw.places;
+
+export async function GET() {
+    const searchData = data.map(item => ({
+        name: item.name,
+        slug: item.slug,
+        region: item.region,
+        category: item.category,
+        rating: item.rating || 0,
+        reviews_count: item.reviews_count || 0,
+        photos: item.photos || []
+    }));
+
+    return new Response(JSON.stringify(searchData), {
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    });
+}

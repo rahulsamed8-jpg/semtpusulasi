@@ -1,6 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import data from '../data/turizm_data.json';
+import dataRaw from '../data/turizm_data.json';
+const data = dataRaw.places;
 ---
 
 <Layout title="Arama Sonuçları | SemtPusulası" description="Arama sonuçları.">
@@ -38,7 +39,7 @@ import data from '../data/turizm_data.json';
         </div>
     </div>
 
-    <script is:inline define:vars={{ searchData: data }}>
+    <script is:inline>
         document.addEventListener('DOMContentLoaded', () => {
             // URL'den 'q' parametresini al
             const urlParams = new URLSearchParams(window.location.search);
@@ -55,44 +56,61 @@ import data from '../data/turizm_data.json';
             const containerEl = document.getElementById('results-container');
             const noResultsEl = document.getElementById('no-results');
             const noResultsTextEl = document.getElementById('no-results-text');
-
-            if (!query) {
-                // Arama kelimesi yoksa hepsini göster
-                titleEl.textContent = "Tüm Mekanlar";
-                renderResults(searchData);
-                return;
-            }
-
-            titleEl.textContent = `"${query}" için arama sonuçları`;
             
-            const lowerQuery = query.toLowerCase();
-            const searchResults = searchData.filter(item => 
-                (item.name && item.name.toLowerCase().includes(lowerQuery)) ||
-                (item.address && item.address.toLowerCase().includes(lowerQuery)) ||
-                (item.region && item.region.toLowerCase().includes(lowerQuery)) ||
-                (item.category && item.category.toLowerCase().includes(lowerQuery))
-            );
+            // Veriyi asenkron olarak yükle (sayfanın şişmesini önler)
+            fetch('/turizm_data.json')
+                .then(res => res.json())
+                .then(result => {
+                    const searchData = result.places || [];
+                    if (!query) {
+                        titleEl.textContent = "Tüm Mekanlar";
+                        renderResults(searchData, query);
+                        return;
+                    }
 
-            renderResults(searchResults);
+                    titleEl.textContent = `"${query}" için arama sonuçları`;
+                    
+                    const lowerQuery = query.toLowerCase();
+                    const searchResults = searchData.filter(item => 
+                        (item.name && item.name.toLowerCase().includes(lowerQuery)) ||
+                        (item.address && item.address.toLowerCase().includes(lowerQuery)) ||
+                        (item.region && item.region.toLowerCase().includes(lowerQuery)) ||
+                        (item.category && item.category.toLowerCase().includes(lowerQuery))
+                    );
 
-            function renderResults(results) {
-                subtitleEl.innerHTML = `Toplam <span class="text-blue-600 font-bold">${results.length}</span> sonuç bulundu.`;
+                    renderResults(searchResults, query);
+                })
+                .catch(err => {
+                    console.error("Veri yüklenemedi:", err);
+                    subtitleEl.textContent = "Veri yüklenirken bir hata oluştu.";
+                });
+
+            function renderResults(results, currentQuery) {
+                // Performans için sayfada en fazla 30 sonuç göster
+                const maxResults = 30;
+                const displayResults = results.slice(0, maxResults);
+                
+                if (results.length > maxResults) {
+                    subtitleEl.innerHTML = `Toplam <span class="text-blue-600 font-bold">${results.length}</span> sonuç bulundu (İlk ${maxResults} sonuç gösteriliyor).`;
+                } else {
+                    subtitleEl.innerHTML = `Toplam <span class="text-blue-600 font-bold">${results.length}</span> sonuç bulundu.`;
+                }
                 
                 if (results.length === 0) {
                     containerEl.innerHTML = '';
                     noResultsEl.classList.remove('hidden');
-                    if(query) {
-                        noResultsTextEl.textContent = `"${query}" ile eşleşen bir sonuç bulamadık. Lütfen farklı kelimelerle tekrar deneyin.`;
+                    if(currentQuery) {
+                        noResultsTextEl.textContent = `"${currentQuery}" ile eşleşen bir sonuç bulamadık. Lütfen farklı kelimelerle tekrar deneyin.`;
                     }
                     return;
                 }
 
                 noResultsEl.classList.add('hidden');
-                containerEl.innerHTML = results.map(item => `
+                containerEl.innerHTML = displayResults.map(item => `
                     <a href="/mekan/${item.slug}" class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group flex flex-col">
                         <div class="relative h-56 bg-slate-100 overflow-hidden shrink-0">
                             ${item.photos && item.photos.length > 0 ? 
-                                `<img src="${item.photos[0]}" alt="${item.name}" loading="lazy" decoding="async" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />` 
+                                `<img src="${item.photos[0].replace('maxwidth=800', 'maxwidth=400')}" alt="${item.name}" loading="lazy" decoding="async" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />` 
                                 : 
                                 `<div class="w-full h-full flex items-center justify-center text-slate-400 font-medium">Fotoğraf Yok</div>`
                             }

@@ -1,11 +1,12 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import data from '../../data/turizm_data.json';
+import dataRaw from '../../data/turizm_data.json';
+const data = dataRaw.places;
 import { marked } from 'marked';
 import AdSensePlaceholder from '../../components/AdSensePlaceholder.astro';
 
 export async function getStaticPaths() {
-  return data.map((item) => {
+  return dataRaw.places.map((item) => {
     return {
       params: { slug: item.slug },
       props: { item },
@@ -16,10 +17,66 @@ export async function getStaticPaths() {
 const { item } = Astro.props;
 const articleHTML = item.seo_article ? marked.parse(item.seo_article) : null;
 const ogImage = item.photos && item.photos.length > 0 ? item.photos[0] : undefined;
+
+// Schema Markup (JSON-LD)
+const schemaType = item.category.toLowerCase().includes('otel') ? "Hotel" : 
+                   item.category.toLowerCase().includes('plaj') ? "Beach" : 
+                   item.category.toLowerCase().includes('restoran') ? "Restaurant" : "LocalBusiness";
+
+const localBusinessSchema: any = {
+  "@context": "https://schema.org",
+  "@type": schemaType,
+  "name": item.name,
+  "image": item.photos && item.photos.length > 0 ? item.photos[0] : "https://semtpusulasi.com/logo.png",
+  "@id": `https://semtpusulasi.com/mekan/${item.slug}`,
+  "url": `https://semtpusulasi.com/mekan/${item.slug}`,
+  "telephone": item.phone || "",
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": item.address || "",
+    "addressLocality": item.region || "",
+    "addressRegion": "İzmir",
+    "addressCountry": "TR"
+  }
+};
+
+// Eğer puan varsa AggregateRating ekle (Sarı Yıldızlar için kritik)
+if (item.rating) {
+    localBusinessSchema.aggregateRating = {
+        "@type": "AggregateRating",
+        "ratingValue": item.rating.toString().replace(',', '.'),
+        "reviewCount": item.reviews_count ? parseInt(item.reviews_count.toString().replace(/[^0-9]/g, ''), 10) || 1 : 1
+    };
+}
+
+const breadcrumbSchema = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [{
+    "@type": "ListItem",
+    "position": 1,
+    "name": "Ana Sayfa",
+    "item": "https://semtpusulasi.com/"
+  },{
+    "@type": "ListItem",
+    "position": 2,
+    "name": item.category,
+    "item": `https://semtpusulasi.com/kategori/${item.category.toLowerCase().replace(' ', '-')}`
+  },{
+    "@type": "ListItem",
+    "position": 3,
+    "name": item.name,
+    "item": `https://semtpusulasi.com/mekan/${item.slug}`
+  }]
+};
 ---
 
 <Layout title={`${item.name} - ${item.region} | SemtPusulası`} description={`${item.region} bölgesindeki ${item.name} hakkında bilgiler, fotoğraflar ve yorumlar.`} image={ogImage}>
     
+    <!-- Yapısal Veri (JSON-LD Schemas) -->
+    <script is:inline type="application/ld+json" set:html={JSON.stringify(localBusinessSchema)} />
+    <script is:inline type="application/ld+json" set:html={JSON.stringify(breadcrumbSchema)} />
+
     <div class="max-w-7xl mx-auto mt-8 px-4 mb-24 flex flex-col lg:flex-row gap-8">
         
         <!-- SOL/ANA İÇERİK (Makale ve Detaylar) -->
@@ -56,8 +113,8 @@ const ogImage = item.photos && item.photos.length > 0 ? item.photos[0] : undefin
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
                         <img src={item.photos[0]} alt={item.name} loading="lazy" decoding="async" class="w-full h-64 md:h-80 object-cover rounded-xl shadow-sm" />
                         <div class="grid grid-rows-2 gap-4 hidden md:grid">
-                            {item.photos[1] && <img src={item.photos[1]} alt={`${item.name} detay`} loading="lazy" decoding="async" class="w-full h-[9.5rem] object-cover rounded-xl shadow-sm" />}
-                            {item.photos[2] && <img src={item.photos[2]} alt={`${item.name} görünüm`} loading="lazy" decoding="async" class="w-full h-[9.5rem] object-cover rounded-xl shadow-sm" />}
+                            {item.photos[1] && <img src={item.photos[1].replace('maxwidth=800', 'maxwidth=400')} alt={`${item.name} detay`} loading="lazy" decoding="async" class="w-full h-[9.5rem] object-cover rounded-xl shadow-sm" />}
+                            {item.photos[2] && <img src={item.photos[2].replace('maxwidth=800', 'maxwidth=400')} alt={`${item.name} görünüm`} loading="lazy" decoding="async" class="w-full h-[9.5rem] object-cover rounded-xl shadow-sm" />}
                         </div>
                     </div>
                 )}

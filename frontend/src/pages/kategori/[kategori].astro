@@ -1,15 +1,16 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import data from '../../data/turizm_data.json';
+import dataRaw from '../../data/turizm_data.json';
+const data = dataRaw.places;
 import AdSensePlaceholder from '../../components/AdSensePlaceholder.astro';
 
 export async function getStaticPaths() {
 // ... existing getStaticPaths ...
-  const categories = [...new Set(data.map((item) => item.category))];
+  const categories = [...new Set(dataRaw.places.map((item) => item.category))];
   
   return categories.map((category) => {
     const slug = category.toLowerCase().replace(' ', '-');
-    const items = data.filter((item) => item.category === category);
+    const items = dataRaw.places.filter((item) => item.category === category);
     
     return {
       params: { kategori: slug },
@@ -27,7 +28,12 @@ const uniqueRegions = [...new Set(items.map((item) => item.region))].filter(Bool
         
         <!-- Başlık ve Filtre Çubuğu Alanı -->
         <div class="mb-10">
-            <h1 class="text-3xl md:text-5xl font-extrabold text-slate-900 mb-6 tracking-tight">En İyi {categoryName}</h1>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-slate-900 mb-4 tracking-tight">En İyi {categoryName}</h1>
+            
+            <!-- SEO Açıklaması -->
+            <p class="text-lg text-slate-600 mb-8 max-w-3xl leading-relaxed">
+                Seferihisar, Gümüldür, Özdere ve çevresindeki en seçkin <strong class="text-slate-800">{categoryName.toLowerCase()}</strong> rehberi. Puanlarına, kullanıcı yorumlarına ve detaylı özelliklerine göre sizin için özenle derlediğimiz bölgemizin en iyi {categoryName.toLowerCase()} listesini aşağıdan inceleyebilir, haritadaki konumlarını görerek gezi rotanızı hemen planlayabilirsiniz.
+            </p>
             
             <!-- Yatay Filtre Çubuğu (Glassmorphism & Şık Arayüz) -->
             <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 flex flex-col md:flex-row gap-4 items-center justify-between z-20 relative">
@@ -100,7 +106,7 @@ const uniqueRegions = [...new Set(items.map((item) => item.region))].filter(Bool
                 >
                     <div class="relative h-56 bg-slate-100 overflow-hidden shrink-0">
                         {item.photos && item.photos.length > 0 ? (
-                            <img src={item.photos[0]} alt={item.name} loading="lazy" decoding="async" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                            <img src={item.photos[0].replace('maxwidth=800', 'maxwidth=400')} alt={item.name} loading="lazy" decoding="async" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                         ) : (
                             <div class="w-full h-full flex items-center justify-center text-slate-400 font-medium">Fotoğraf Yok</div>
                         )}

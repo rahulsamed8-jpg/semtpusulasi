@@ -16,10 +16,10 @@ const { type = 'horizontal', className = '' } = Astro.props;
         ${type === 'vertical' ? 'w-[160px] h-[600px] md:w-[300px] md:h-[600px]' : ''}
         ${type === 'in-article' ? 'w-full h-[250px] md:h-[300px]' : ''}
     `}>
-        <div class="absolute top-2 left-2 text-[10px] uppercase tracking-widest font-bold text-slate-400 bg-slate-200 px-2 py-0.5 rounded opacity-70">
+        <div class="absolute top-2 left-2 text-[10px] uppercase tracking-widest font-bold text-slate-600 bg-slate-200 px-2 py-0.5 rounded opacity-80">
             Reklam
         </div>
-        <svg class="w-8 h-8 mb-2 text-slate-300 group-hover:text-blue-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"></path></svg>
-        <span class="text-sm">Reklam Alanı ({type})</span>
+        <svg class="w-8 h-8 mb-2 text-slate-400 group-hover:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"></path></svg>
+        <span class="text-sm font-semibold text-slate-500">Reklam Alanı ({type})</span>
     </div>
 </div>

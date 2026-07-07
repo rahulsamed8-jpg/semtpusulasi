@@ -1,0 +1,49 @@
+---
+import Layout from '../../layouts/Layout.astro';
+
+// Tüm markdown rehber yazılarını çek
+const posts = await Astro.glob('./*.md');
+
+// Yazıları tarihe göre sırala (isteğe bağlı)
+// posts.sort((a, b) => new Date(b.frontmatter.date).valueOf() - new Date(a.frontmatter.date).valueOf());
+---
+
+<Layout title="Gezi Rehberi | SemtPusulası" description="SemtPusulası gezi rehberi ile Türkiye'nin tatil beldelerini, gizli koylarını ve en iyi mekanlarını keşfedin.">
+    <!-- Hero Section -->
+    <div class="relative bg-blue-600 text-white py-20 px-4">
+        <div class="absolute inset-0 overflow-hidden">
+            <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
+            <div class="absolute inset-0 bg-gradient-to-r from-blue-700 to-blue-500 opacity-90"></div>
+        </div>
+        <div class="relative max-w-7xl mx-auto text-center z-10">
+            <h1 class="text-4xl md:text-5xl font-extrabold mb-6">SemtPusulası Gezi Rehberi</h1>
+            <p class="text-xl md:text-2xl text-blue-100 max-w-3xl mx-auto font-light">Ege'nin saklı cennetlerinden hareketli sokaklarına kadar, rotanızı oluşturacak tüm detaylar burada.</p>
+        </div>
+    </div>
+
+    <!-- Posts Grid -->
+    <div class="max-w-7xl mx-auto px-4 py-16">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+            {posts.map(post => (
+                <a href={post.url} class="group bg-white rounded-2xl shadow-sm hover:shadow-2xl transition-all duration-300 overflow-hidden border border-slate-100 flex flex-col h-full transform hover:-translate-y-1">
+                    <div class="relative h-60 w-full overflow-hidden">
+                        <img src={post.frontmatter.image} alt={post.frontmatter.title} class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-60 group-hover:opacity-80 transition-opacity"></div>
+                        <div class="absolute bottom-4 left-4">
+                            <span class="bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full">{post.frontmatter.readTime} Okuma</span>
+                        </div>
+                    </div>
+                    <div class="p-8 flex flex-col flex-grow">
+                        <div class="text-sm text-slate-500 mb-3 font-medium">{post.frontmatter.date}</div>
+                        <h2 class="text-2xl font-bold text-slate-800 mb-4 line-clamp-2 group-hover:text-blue-600 transition-colors">{post.frontmatter.title}</h2>
+                        <p class="text-slate-600 line-clamp-3 mb-6 flex-grow">{post.frontmatter.description}</p>
+                        <div class="mt-auto inline-flex items-center text-blue-600 font-bold group-hover:translate-x-2 transition-transform">
+                            Rehberi Oku
+                            <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                        </div>
+                    </div>
+                </a>
+            ))}
+        </div>
+    </div>
+</Layout>

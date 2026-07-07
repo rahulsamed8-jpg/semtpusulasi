@@ -1,21 +1,32 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import data from '../data/turizm_data.json';
+import dataRaw from '../data/turizm_data.json';
+const data = dataRaw.places;
 import AdSensePlaceholder from '../components/AdSensePlaceholder.astro';
 
 // Kategoriler için temsili fotoğrafları JSON'dan bulalım veya Unsplash'ten çekelim
 const categoryImages = {
-  "Plajlar": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1600&auto=format&fit=crop",
-  "Gezilecek Yerler": data.find(i => i.category === "Gezilecek Yerler")?.photos[0] || "https://images.unsplash.com/photo-1533050487297-09b450131914?q=80&w=1600&auto=format&fit=crop",
-  "Mekanlar": "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=1600&auto=format&fit=crop",
-  "Oteller": "https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=1600&auto=format&fit=crop"
+  "Plajlar": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=800&auto=format&fit=crop",
+  "Gezilecek Yerler": "/arkaplan.webp",
+  "Mekanlar": "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=800&auto=format&fit=crop",
+  "Oteller": "https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=800&auto=format&fit=crop"
 };
+
+// Resim boyutlarını optimize eden yardımcı fonksiyon (Büyük resimleri ufaltır)
+const optImg = (url, width) => typeof url === 'string' && url.includes('maxwidth=800') ? url.replace('maxwidth=800', `maxwidth=${width}`) : url;
 
 // En popüler 3 mekanı (Puana göre) ana sayfada göstermek için alalım
 const popularPlaces = [...data].sort((a, b) => b.rating - a.rating).slice(0, 3);
 
+// Haftanın Mekanı (En çok yoruma sahip olanı seçelim)
+const venueOfTheWeek = [...data].sort((a, b) => (b.reviews_count || 0) - (a.reviews_count || 0))[0];
+
 // Yeni Eklenenler (Son 4 mekan)
 const recentPlaces = [...data].slice(-4);
+
+// Blog Yazılarını Çek
+const posts = await Astro.glob('./rehber/*.md');
+const latestPosts = posts.slice(0, 4);
 
 // Benzersiz Bölgeler ve Rastgele Fotoğrafları
 const uniqueRegionsList = [...new Set(data.map(item => item.region))].filter(Boolean);
@@ -30,19 +41,19 @@ const regionsWithPhotos = uniqueRegionsList.map(region => {
     
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         <!-- HERO SECTION (Devasa Arka Plan ve Arama) -->
-        <div class="relative w-full h-[550px] md:h-[650px] rounded-3xl overflow-hidden shadow-2xl mb-16 mt-4">
+        <div class="relative w-full h-[400px] sm:h-[450px] md:h-[650px] rounded-3xl overflow-hidden shadow-2xl mb-12 md:mb-16 mt-4">
             <!-- Arka Plan Resmi (İlk Mekanın Resmi Veya Standart) -->
-            <img src={categoryImages["Gezilecek Yerler"]} alt="Sığacık Manzara" class="absolute inset-0 w-full h-full object-cover" />
+            <img src={categoryImages["Gezilecek Yerler"]} alt="Semt Pusulası" width="1200" height="650" fetchpriority="high" decoding="async" class="absolute inset-0 w-full h-full object-cover" />
             
             <!-- Karartma Efekti (Overlay) -->
             <div class="absolute inset-0 bg-gradient-to-b from-slate-900/60 via-slate-900/30 to-slate-900/90"></div>
             
             <!-- İçerik -->
-            <div class="relative h-full flex flex-col items-center justify-center px-4 text-center">
-                <h1 class="text-5xl md:text-6xl lg:text-7xl font-extrabold text-white mb-6 drop-shadow-lg tracking-tight">
+            <div class="relative h-full flex flex-col items-center justify-center px-4 md:px-8 text-center">
+                <h1 class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-white mb-4 md:mb-6 drop-shadow-lg tracking-tight">
                     Bölgendeki En İyileri <span class="text-blue-400">Keşfet</span>
                 </h1>
-                <p class="text-lg md:text-xl text-slate-200 mb-10 max-w-2xl drop-shadow-md font-light">
+                <p class="text-base sm:text-lg md:text-xl text-slate-200 mb-6 md:mb-10 max-w-2xl drop-shadow-md font-light">
                     Gezilecek yerlerden gizli plajlara, lüks otellerden lezzetli mekanlara kadar aradığınız her şey tek tıkla burada.
                 </p>
                 
@@ -73,7 +84,7 @@ const regionsWithPhotos = uniqueRegionsList.map(region => {
                 {regionsWithPhotos.map(region => (
                     <a href={`/arama?q=${region.name}`} class="snap-start shrink-0 group flex flex-col items-center gap-3">
                         <div class="w-28 h-28 md:w-36 md:h-36 rounded-full overflow-hidden shadow-md group-hover:shadow-xl transition-all duration-300 ring-4 ring-transparent group-hover:ring-blue-100">
-                            <img src={region.photo} alt={region.name} class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                            <img src={optImg(region.photo, 200)} alt={region.name} loading="lazy" width="150" height="150" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                         </div>
                         <span class="font-bold text-slate-700 group-hover:text-blue-600 transition-colors text-center text-sm md:text-base">{region.name}</span>
                     </a>
@@ -93,7 +104,7 @@ const regionsWithPhotos = uniqueRegionsList.map(region => {
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 {Object.entries(categoryImages).map(([cat, img]) => (
                     <a href={`/kategori/${cat.toLowerCase().replace(' ', '-')}`} class="group relative h-72 rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
-                        <img src={img} alt={cat} loading="lazy" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                        <img src={optImg(img, 400)} alt={cat} loading="lazy" width="400" height="300" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                         <div class="absolute inset-0 bg-gradient-to-t from-slate-900/95 via-slate-900/40 to-transparent"></div>
                         <div class="absolute bottom-0 left-0 p-6 w-full">
                             <h3 class="text-2xl font-bold text-white mb-2 group-hover:text-blue-300 transition-colors">{cat}</h3>
@@ -105,6 +116,42 @@ const regionsWithPhotos = uniqueRegionsList.map(region => {
                 ))}
             </div>
         </div>
+
+        <!-- HAFTANIN MEKANI (YENİ - EDİTÖRÜN SEÇİMİ) -->
+        {venueOfTheWeek && (
+        <div class="mb-24">
+            <div class="flex items-center justify-between mb-8">
+                <div>
+                    <h2 class="text-3xl font-bold text-slate-900 tracking-tight mb-2">Haftanın Mekanı</h2>
+                    <p class="text-slate-500">Editörlerimizin bu hafta senin için seçtiği efsanevi durak</p>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row group transform hover:-translate-y-1 transition-all duration-500 border border-slate-100">
+                <div class="md:w-1/2 h-72 md:h-auto relative overflow-hidden">
+                    <img src={optImg(venueOfTheWeek.photos?.[0] || categoryImages["Mekanlar"], 800)} alt={venueOfTheWeek.name} onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&q=80';" loading="lazy" width="800" height="600" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                    <div class="absolute top-4 left-4 bg-blue-600 text-white font-bold px-4 py-2 rounded-xl shadow-lg flex items-center gap-2">
+                        <span>🏆</span> Editörün Seçimi
+                    </div>
+                </div>
+                <div class="md:w-1/2 p-8 md:p-12 flex flex-col justify-center bg-gradient-to-br from-white to-slate-50">
+                    <div class="text-sm font-bold text-blue-600 mb-3 uppercase tracking-wider">{venueOfTheWeek.region} • {venueOfTheWeek.category}</div>
+                    <h3 class="text-3xl md:text-4xl font-extrabold text-slate-900 mb-4">{venueOfTheWeek.name}</h3>
+                    <p class="text-slate-600 mb-8 text-lg leading-relaxed line-clamp-3">
+                        {venueOfTheWeek.address} bölgesinde yer alan bu benzersiz mekan, {venueOfTheWeek.rating} yıldızlı mükemmel hizmet kalitesi ve {venueOfTheWeek.reviews_count} mutlu müşteri değerlendirmesiyle bu haftanın açık ara en iyi tercihi.
+                    </p>
+                    <div class="mt-auto flex items-center justify-between">
+                        <div class="flex items-center gap-2 text-amber-500 font-bold text-lg">
+                            ⭐ {venueOfTheWeek.rating} <span class="text-slate-400 text-sm font-normal">({venueOfTheWeek.reviews_count} Yorum)</span>
+                        </div>
+                        <a href={`/mekan/${venueOfTheWeek.slug}`} class="bg-slate-900 hover:bg-blue-600 text-white px-6 py-3 rounded-xl font-bold transition-colors shadow-md">
+                            Mekanı Keşfet →
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        )}
 
         <!-- POPÜLER MEKANLAR VİTRİNİ -->
         <div class="mb-24">
@@ -123,7 +170,7 @@ const regionsWithPhotos = uniqueRegionsList.map(region => {
                     <a href={`/mekan/${item.slug}`} class="bg-white rounded-2xl shadow-md border border-slate-100 overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group flex flex-col">
                         <div class="relative h-60 overflow-hidden shrink-0">
                             {item.photos && item.photos.length > 0 ? (
-                                <img src={item.photos[0]} alt={item.name} loading="lazy" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                                <img src={optImg(item.photos[0], 400)} alt={item.name} onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&q=80';" loading="lazy" width="400" height="240" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                             ) : (
                                 <div class="w-full h-full bg-slate-200 flex items-center justify-center">Fotoğraf Yok</div>
                             )}
@@ -135,7 +182,7 @@ const regionsWithPhotos = uniqueRegionsList.map(region => {
                             <div class="text-xs font-bold text-blue-600 mb-2 uppercase tracking-wider bg-blue-50 inline-block px-2 py-1 rounded w-max">{item.category}</div>
                             <h3 class="text-xl font-bold text-slate-900 mb-2 group-hover:text-blue-600 transition-colors line-clamp-1">{item.name}</h3>
                             <p class="text-slate-500 text-sm line-clamp-2 mb-4 flex-grow">{item.address}</p>
-                            <div class="flex items-center text-sm font-medium text-slate-400 mt-auto">
+                            <div class="flex items-center text-sm font-medium text-slate-500 mt-auto">
                                 <span>{item.reviews_count} Google Değerlendirmesi</span>
                             </div>
                         </div>
@@ -162,7 +209,7 @@ const regionsWithPhotos = uniqueRegionsList.map(region => {
                     <a href={`/mekan/${item.slug}`} class="bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700/50 overflow-hidden hover:bg-slate-800 transition-all duration-300 group">
                         <div class="relative h-40 overflow-hidden">
                             {item.photos && item.photos.length > 0 ? (
-                                <img src={item.photos[0]} alt={item.name} loading="lazy" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                                <img src={optImg(item.photos[0], 400)} alt={item.name} onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&q=80';" loading="lazy" width="400" height="160" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                             ) : (
                                 <div class="w-full h-full bg-slate-700 flex items-center justify-center text-slate-500">Yok</div>
                             )}
@@ -173,6 +220,95 @@ const regionsWithPhotos = uniqueRegionsList.map(region => {
                         </div>
                     </a>
                 ))}
+            </div>
+        </div>
+
+        <!-- GEZİ REHBERİ VİTRİNİ (YENİ) -->
+        <div class="mb-24">
+            <div class="flex items-center justify-between mb-8">
+                <div>
+                    <h2 class="text-3xl font-bold text-slate-900 tracking-tight mb-2">En Yeni Gezi Rehberleri</h2>
+                    <p class="text-slate-500">Editörlerimiz tarafından hazırlanan özel rotalar ve gizli kalmış cennetler</p>
+                </div>
+                <a href="/rehber" class="hidden md:flex items-center gap-2 text-blue-600 font-bold hover:text-blue-700 transition-colors">
+                    Tümünü Gör <span>→</span>
+                </a>
+            </div>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {latestPosts.map((post) => (
+                    <a href={post.url} class="group bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-slate-100 flex flex-col h-full transform hover:-translate-y-1">
+                        <div class="relative h-48 w-full overflow-hidden">
+                            <img src={post.frontmatter.image} alt={post.frontmatter.title} loading="lazy" width="400" height="200" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-60 group-hover:opacity-80 transition-opacity"></div>
+                            <div class="absolute bottom-3 left-3">
+                                <span class="bg-blue-600 text-white text-[10px] font-bold px-2 py-1 rounded-full">{post.frontmatter.readTime} Okuma</span>
+                            </div>
+                        </div>
+                        <div class="p-5 flex flex-col flex-grow">
+                            <h3 class="text-lg font-bold text-slate-800 mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors leading-tight">{post.frontmatter.title}</h3>
+                            <p class="text-slate-500 text-sm line-clamp-2 mb-4 flex-grow">{post.frontmatter.description}</p>
+                            <div class="mt-auto text-sm text-blue-600 font-bold group-hover:translate-x-1 transition-transform flex items-center">
+                                Rehberi Oku <span class="ml-1">→</span>
+                            </div>
+                        </div>
+                    </a>
+                ))}
+            </div>
+            <div class="mt-6 text-center md:hidden">
+                <a href="/rehber" class="inline-flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 px-6 rounded-xl transition-colors w-full">
+                    Tüm Rehberleri Gör <span>→</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- KULLANICI YORUMLARI / TESTIMONIALS (YENİ) -->
+        <div class="mb-24 py-16 px-4 md:px-8 bg-slate-900 rounded-3xl relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-64 h-64 bg-blue-600/10 rounded-full blur-3xl"></div>
+            <div class="absolute bottom-0 left-0 w-64 h-64 bg-purple-600/10 rounded-full blur-3xl"></div>
+            
+            <div class="text-center mb-12 relative z-10">
+                <h2 class="text-3xl md:text-4xl font-extrabold text-white mb-4">Gezginler Ne Diyor?</h2>
+                <p class="text-slate-400 text-lg">SemtPusulası ile keşfeden yüzlerce mutlu kullanıcının deneyimleri.</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 relative z-10">
+                <!-- Yorum 1 -->
+                <div class="bg-slate-800/50 backdrop-blur border border-slate-700/50 p-8 rounded-2xl">
+                    <div class="text-amber-400 mb-4 text-xl">★★★★★</div>
+                    <p class="text-slate-300 italic mb-6">"Sayenizde Sığacık'ta daha önce hiç duymadığım o harika koya gittik. Sitedeki detaylar ve resimler o kadar doğru ki, artık tek rehberim burası."</p>
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center text-white font-bold text-xl">A</div>
+                        <div>
+                            <div class="text-white font-bold">Ayşe Y.</div>
+                            <div class="text-slate-400 text-sm">İzmir</div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Yorum 2 -->
+                <div class="bg-slate-800/50 backdrop-blur border border-slate-700/50 p-8 rounded-2xl transform md:-translate-y-4 shadow-2xl shadow-blue-900/20 border-t-blue-500/30">
+                    <div class="text-amber-400 mb-4 text-xl">★★★★★</div>
+                    <p class="text-slate-300 italic mb-6">"Hafta sonu kahvaltısı için mekan ararken SemtPusulası'nı kullandım. Puanlamalar tamamen organik ve yönlendirmeler çok başarılı. Emeğinize sağlık."</p>
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 bg-gradient-to-br from-green-400 to-emerald-600 rounded-full flex items-center justify-center text-white font-bold text-xl">C</div>
+                        <div>
+                            <div class="text-white font-bold">Caner K.</div>
+                            <div class="text-slate-400 text-sm">İstanbul</div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Yorum 3 -->
+                <div class="bg-slate-800/50 backdrop-blur border border-slate-700/50 p-8 rounded-2xl">
+                    <div class="text-amber-400 mb-4 text-xl">★★★★★</div>
+                    <p class="text-slate-300 italic mb-6">"Özdere'deki otelleri tek tek gezmek yerine oturduğum yerden en lüks olanını SemtPusulası sayesinde buldum. Tasarımı ve hızı muazzam."</p>
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 bg-gradient-to-br from-orange-400 to-red-500 rounded-full flex items-center justify-center text-white font-bold text-xl">M</div>
+                        <div>
+                            <div class="text-white font-bold">Melis T.</div>
+                            <div class="text-slate-400 text-sm">Ankara</div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
