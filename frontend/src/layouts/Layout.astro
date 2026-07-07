@@ -17,6 +17,9 @@ const canonicalURL = new URL(Astro.url.pathname, site);
     <link rel="icon" type="image/png" href="/logo.png" />
     <meta name="google-site-verification" content="H97v-1dQI2Imefp0prMvphAAySTj__6Do24TkIGYHUc" />
     
+    <!-- Netlify Identity Widget for CMS -->
+    <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+
     <title>{title}</title>
 
     <!-- Canonical URL -->
@@ -385,5 +388,17 @@ const canonicalURL = new URL(Astro.url.pathname, site);
             }
         });
     </script>
-</body>
+        <!-- Netlify Identity Redirect -->
+        <script>
+          if (window.netlifyIdentity) {
+            window.netlifyIdentity.on("init", user => {
+              if (!user) {
+                window.netlifyIdentity.on("login", () => {
+                  document.location.href = "/admin/";
+                });
+              }
+            });
+          }
+        </script>
+    </body>
 </html>
