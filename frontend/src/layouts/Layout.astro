@@ -383,13 +383,208 @@ const canonicalURL = new URL(Astro.url.pathname, site);
 
                 mobileMenuClose.addEventListener('click', closeMenu);
                 mobileMenu.addEventListener('click', (e) => {
+                        <a href="mailto:iletisim@semtpusulasi.com">iletisim@semtpusulasi.com</a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Yasal -->
+            <div>
+                <h3 class="text-lg font-bold text-white mb-6 uppercase tracking-wider text-sm">Yasal</h3>
+                <ul class="space-y-3 text-sm font-medium text-slate-400">
+                    <li><a href="/gizlilik" class="hover:text-white transition-colors">Gizlilik Politikası</a></li>
+                    <li><a href="/kullanim-kosullari" class="hover:text-white transition-colors">Kullanım Koşulları</a></li>
+                    <li><a href="/cerezler" class="hover:text-white transition-colors">Çerez Politikası</a></li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 pt-8 border-t border-slate-800/50 text-sm flex flex-col md:flex-row items-center justify-between text-slate-400">
+            <p>&copy; {new Date().getFullYear()} SemtPusulası. Tüm hakları saklıdır.</p>
+            <p class="mt-2 md:mt-0">Made with ❤️ in Turkey</p>
+        </div>
+    </footer>
+    <CookieBanner />
+
+    <!-- Akıllı Arama Motoru (Smart Search) JS Mantığı -->
+    <script is:inline>
+        document.addEventListener('DOMContentLoaded', () => {
+            const searchInputs = [document.getElementById('header-search-input'), document.getElementById('mobile-search-input')].filter(Boolean);
+            const resultsContainers = [document.getElementById('header-search-results'), document.getElementById('mobile-search-results')].filter(Boolean);
+            let searchData = null;
+            let isLoading = false;
+
+            const normalize = (str) => {
+                if(!str) return '';
+                return str.toLowerCase()
+                  .replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ş/g, 's')
+                  .replace(/ı/g, 'i').replace(/ö/g, 'o').replace(/ç/g, 'c')
+                  .replace(/[^a-z0-9]/g, '');
+            };
+
+            const trendingHTML = `
+                <div class="p-4 bg-slate-50/50">
+                    <p class="text-xs font-bold text-slate-400 mb-3 uppercase tracking-wider flex items-center gap-2"><span class="text-orange-500 text-base">🔥</span> Popüler Aramalar</p>
+                    <div class="flex flex-wrap gap-2">
+                        <span class="trending-badge bg-white border border-slate-200 text-slate-600 px-3 py-1.5 rounded-lg text-xs font-bold cursor-pointer hover:border-blue-500 hover:text-blue-600 transition-all shadow-sm">Akarca Plajı</span>
+                        <span class="trending-badge bg-white border border-slate-200 text-slate-600 px-3 py-1.5 rounded-lg text-xs font-bold cursor-pointer hover:border-blue-500 hover:text-blue-600 transition-all shadow-sm">Teos Marina</span>
+                        <span class="trending-badge bg-white border border-slate-200 text-slate-600 px-3 py-1.5 rounded-lg text-xs font-bold cursor-pointer hover:border-blue-500 hover:text-blue-600 transition-all shadow-sm">Oteller</span>
+                        <span class="trending-badge bg-white border border-slate-200 text-slate-600 px-3 py-1.5 rounded-lg text-xs font-bold cursor-pointer hover:border-blue-500 hover:text-blue-600 transition-all shadow-sm">Gümüldür Aquapark</span>
+                    </div>
+                </div>
+            `;
+
+            const loadSearchData = async () => {
+                if (searchData || isLoading) return;
+                isLoading = true;
+                try {
+                    const res = await fetch('/search.json');
+                    searchData = await res.json();
+                } catch (e) {
+                    console.error("Arama verisi yüklenemedi", e);
+                }
+                isLoading = false;
+            };
+
+            document.addEventListener('click', (e) => {
+                searchInputs.forEach((input, index) => {
+                    const container = resultsContainers[index];
+                    if (input && container && !input.contains(e.target) && !container.contains(e.target)) {
+                        container.classList.add('hidden');
+                    }
+                });
+            });
+
+            searchInputs.forEach((searchInput, index) => {
+                const resultsContainer = resultsContainers[index];
+                if(!resultsContainer) return;
+
+                const renderTrending = () => {
+                    resultsContainer.innerHTML = trendingHTML;
+                    resultsContainer.classList.remove('hidden');
+                    
+                    // Click events for trending badges
+                    const badges = resultsContainer.querySelectorAll('.trending-badge');
+                    badges.forEach(badge => {
+                        badge.addEventListener('click', () => {
+                            searchInput.value = badge.textContent;
+                            searchInput.dispatchEvent(new Event('input'));
+                        });
+                    });
+                };
+
+                searchInput.addEventListener('input', (e) => {
+                    const rawQuery = e.target.value.trim();
+                    const query = normalize(rawQuery);
+                    
+                    if (rawQuery.length === 0) {
+                        renderTrending();
+                        return;
+                    }
+                    if (rawQuery.length < 2 || !searchData) {
+                        resultsContainer.classList.add('hidden');
+                        return;
+                    }
+                    
+                    // Fuzzy Search & Category Boost
+                    const matches = searchData.map(item => {
+                        let score = 0;
+                        const normName = normalize(item.name);
+                        const normRegion = normalize(item.region);
+                        const normCat = normalize(item.category);
+                        
+                        if (normName.includes(query)) score += 10;
+                        if (normCat.includes(query)) score += 5; // "Otel" yazınca oteller üste çıksın
+                        if (normRegion.includes(query)) score += 3;
+                        
+                        return { ...item, score };
+                    }).filter(item => item.score > 0)
+                      .sort((a, b) => b.score - a.score || b.rating - a.rating)
+                      .slice(0, 6);
+                    
+                    if (matches.length > 0) {
+                        resultsContainer.innerHTML = matches.map(item => `
+                            <a href="/mekan/${item.slug}" class="flex items-center gap-3 p-3 hover:bg-slate-50 transition-colors group">
+                                <div class="w-12 h-12 rounded-lg bg-slate-100 overflow-hidden shrink-0 border border-slate-200">
+                                    ${item.photos && item.photos.length > 0 
+                                        ? `<img src="${item.photos[0]}" alt="${item.name}" width="48" height="48" loading="lazy" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />` 
+                                        : `<div class="flex items-center justify-center h-full text-lg">📍</div>`}
+                                </div>
+                                <div class="flex flex-col flex-1 min-w-0">
+                                    <span class="font-extrabold text-slate-800 text-sm truncate group-hover:text-blue-600 transition-colors">${item.name}</span>
+                                    <div class="flex items-center justify-between mt-0.5">
+                                        <span class="text-[11px] text-slate-500 font-medium truncate">${item.region} • ${item.category}</span>
+                                        ${item.rating > 0 ? `<span class="flex items-center text-[11px] font-bold text-amber-500 ml-2">⭐ ${item.rating}</span>` : ''}
+                                    </div>
+                                </div>
+                            </a>
+                        `).join('');
+                        
+                        resultsContainer.innerHTML += `
+                            <button onclick="window.location.href='/arama?q=${encodeURIComponent(rawQuery)}'" class="w-full p-3 bg-slate-50 text-blue-600 text-xs font-bold hover:bg-blue-100 transition-colors border-t border-slate-100 flex items-center justify-center gap-1">
+                                "${rawQuery}" için tüm sonuçları gör <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                            </button>
+                        `;
+                        resultsContainer.classList.remove('hidden');
+                    } else {
+                        resultsContainer.innerHTML = `
+                            <div class="p-6 text-center flex flex-col items-center">
+                                <div class="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 mb-3">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                                </div>
+                                <p class="text-sm font-bold text-slate-700">Sonuç bulunamadı</p>
+                                <p class="text-xs text-slate-500 mt-1">Farklı bir kelime ile tekrar deneyin.</p>
+                            </div>
+                        `;
+                        resultsContainer.classList.remove('hidden');
+                    }
+                });
+                
+                searchInput.addEventListener('focus', async (e) => {
+                    await loadSearchData();
+                    if (e.target.value.length === 0) {
+                        renderTrending();
+                    } else if (e.target.value.length >= 2) {
+                        searchInput.dispatchEvent(new Event('input'));
+                    }
+                });
+            });
+            
+            // Mobil Menü İşlemleri
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            const mobileMenuClose = document.getElementById('mobile-menu-close');
+            const mobileMenu = document.getElementById('mobile-menu');
+            const mobileMenuSidebar = document.getElementById('mobile-menu-sidebar');
+
+            if (mobileMenuBtn && mobileMenuClose && mobileMenu && mobileMenuSidebar) {
+                mobileMenuBtn.addEventListener('click', () => {
+                    mobileMenu.classList.remove('hidden');
+                    // Küçük bir gecikme ekleyerek CSS transition'un tetiklenmesini sağlıyoruz
+                    requestAnimationFrame(() => {
+                        mobileMenu.classList.remove('opacity-0');
+                        mobileMenuSidebar.classList.remove('translate-x-full');
+                    });
+                    document.body.style.overflow = 'hidden'; // Arka planın kaymasını engelle
+                });
+
+                const closeMenu = () => {
+                    mobileMenu.classList.add('opacity-0');
+                    mobileMenuSidebar.classList.add('translate-x-full');
+                    document.body.style.overflow = '';
+                    setTimeout(() => {
+                        mobileMenu.classList.add('hidden');
+                    }, 300); // 300ms transition duration ile aynı olmalı
+                };
+
+                mobileMenuClose.addEventListener('click', closeMenu);
+                mobileMenu.addEventListener('click', (e) => {
                     if (e.target === mobileMenu) closeMenu();
                 });
             }
         });
     </script>
         <!-- Netlify Identity Redirect -->
-        <script>
+        <script is:inline>
           if (window.netlifyIdentity) {
             window.netlifyIdentity.on("init", user => {
               if (!user) {
