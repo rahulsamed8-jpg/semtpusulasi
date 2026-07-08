@@ -1,16 +1,16 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import dataRaw from '../../data/turizm_data.json';
-const data = dataRaw.places;
+import { getCollection } from 'astro:content';
 import AdSensePlaceholder from '../../components/AdSensePlaceholder.astro';
 
 export async function getStaticPaths() {
-// ... existing getStaticPaths ...
-  const categories = [...new Set(dataRaw.places.map((item) => item.category))];
+  const mekanlar = await getCollection('mekanlar');
+  const data = mekanlar.map(m => ({ slug: m.slug, ...m.data }));
+  const categories = [...new Set(data.map((item: any) => item.category))] as string[];
   
   return categories.map((category) => {
     const slug = category.toLowerCase().replace(' ', '-');
-    const items = dataRaw.places.filter((item) => item.category === category);
+    const items = data.filter((item) => item.category === category);
     
     return {
       params: { kategori: slug },
@@ -19,8 +19,8 @@ export async function getStaticPaths() {
   });
 }
 
-const { categoryName, items } = Astro.props;
-const uniqueRegions = [...new Set(items.map((item) => item.region))].filter(Boolean).sort();
+const { categoryName, items } = Astro.props as any;
+const uniqueRegions = [...new Set(items.map((item: any) => item.region))].filter(Boolean).sort() as string[];
 ---
 
 <Layout title={`${categoryName} | SemtPusulası`} description={`Bölgenizdeki en iyi ${categoryName} listesi ve detayları.`}>

@@ -1,7 +1,8 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import dataRaw from '../data/turizm_data.json';
-const data = dataRaw.places;
+import { getCollection } from 'astro:content';
+const mekanlar = await getCollection('mekanlar');
+const data = mekanlar.map(m => ({ slug: m.slug, ...m.data }));
 import AdSensePlaceholder from '../components/AdSensePlaceholder.astro';
 
 // Kategoriler için temsili fotoğrafları JSON'dan bulalım veya Unsplash'ten çekelim
@@ -29,7 +30,7 @@ const posts = await Astro.glob('./rehber/*.md');
 const latestPosts = posts.slice(0, 4);
 
 // Benzersiz Bölgeler ve Rastgele Fotoğrafları
-const uniqueRegionsList = [...new Set(data.map(item => item.region))].filter(Boolean);
+const uniqueRegionsList = [...new Set(data.map((item: any) => item.region))].filter(Boolean) as string[];
 const regionsWithPhotos = uniqueRegionsList.map(region => {
     const regionPlaces = data.filter(item => item.region === region && item.photos && item.photos.length > 0);
     const photo = regionPlaces.length > 0 ? regionPlaces[0].photos[0] : "https://images.unsplash.com/photo-1501785888041-af3ef285b470?q=80&w=800&auto=format&fit=crop";
@@ -84,7 +85,7 @@ const regionsWithPhotos = uniqueRegionsList.map(region => {
                 {regionsWithPhotos.map(region => (
                     <a href={`/arama?q=${region.name}`} class="snap-start shrink-0 group flex flex-col items-center gap-3">
                         <div class="w-28 h-28 md:w-36 md:h-36 rounded-full overflow-hidden shadow-md group-hover:shadow-xl transition-all duration-300 ring-4 ring-transparent group-hover:ring-blue-100">
-                            <img src={optImg(region.photo, 200)} alt={region.name} loading="lazy" width="150" height="150" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                            <img src={optImg(region.photo as string, 200)} alt={region.name} loading="lazy" width="150" height="150" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                         </div>
                         <span class="font-bold text-slate-700 group-hover:text-blue-600 transition-colors text-center text-sm md:text-base">{region.name}</span>
                     </a>

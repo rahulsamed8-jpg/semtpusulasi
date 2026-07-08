@@ -1,7 +1,8 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import dataRaw from '../data/turizm_data.json';
-const data = dataRaw.places;
+import { getCollection } from 'astro:content';
+const mekanlar = await getCollection('mekanlar');
+const data = mekanlar.map(m => ({ slug: m.slug, ...m.data }));
 ---
 
 <Layout title="Arama Sonuçları | SemtPusulası" description="Arama sonuçları.">
@@ -58,10 +59,10 @@ const data = dataRaw.places;
             const noResultsTextEl = document.getElementById('no-results-text');
             
             // Veriyi asenkron olarak yükle (sayfanın şişmesini önler)
-            fetch('/turizm_data.json')
+            fetch('/search.json')
                 .then(res => res.json())
                 .then(result => {
-                    const searchData = result.places || [];
+                    const searchData = result || [];
                     if (!query) {
                         titleEl.textContent = "Tüm Mekanlar";
                         renderResults(searchData, query);

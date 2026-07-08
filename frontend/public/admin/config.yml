@@ -11,31 +11,26 @@ public_folder: "/images/places"
 collections:
   - name: "mekanlar"
     label: "Tüm Mekanlar"
-    files:
-      - file: "frontend/src/data/turizm_data.json"
-        name: "mekan_listesi"
-        label: "Mekan Listesi"
-        fields:
-          - name: "places"
-            label: "Mekanlar"
-            widget: "list"
-            fields:
-              - {label: "URL Yolu (Slug)", name: "slug", widget: "string", hint: "Örn: teos-antik-kenti-seferihisar"}
-              - {label: "Mekan Adı", name: "name", widget: "string"}
-              - {label: "Kategori", name: "category", widget: "select", options: ["Gezilecek Yerler", "Oteller", "Mekanlar"]}
-              - {label: "İlçe", name: "district", widget: "string"}
-              - {label: "Bölge/Semt", name: "region", widget: "string"}
-              - {label: "Adres", name: "address", widget: "string"}
-              - {label: "Telefon", name: "phone", widget: "string", required: false}
-              - {label: "Google Puanı", name: "rating", widget: "number", value_type: "float", min: 1, max: 5}
-              - {label: "Değerlendirme Sayısı", name: "reviews_count", widget: "number", value_type: "int"}
-              - {label: "Fotoğraflar", name: "photos", widget: "list", field: {label: "Fotoğraf Linki/Yolu", name: "photo", widget: "image"}}
-              - {label: "Öne Çıkan Yorumlar", name: "reviews", widget: "list", required: false, fields: [
-                  {label: "Yazar", name: "author", widget: "string"},
-                  {label: "Puan", name: "rating", widget: "number"},
-                  {label: "Metin", name: "text", widget: "text"}
-              ]}
-              - {label: "Uzun Açıklama (Makale)", name: "detailed_description", widget: "markdown", required: false}
+    folder: "frontend/src/content/mekanlar"
+    create: true
+    slug: "{{slug}}"
+    extension: "md"
+    format: "frontmatter"
+    fields:
+      - {label: "Mekan Adı", name: "title", widget: "string"}
+      - {label: "Kategori", name: "category", widget: "select", options: ["Gezilecek Yerler", "Oteller", "Mekanlar", "Plajlar"]}
+      - {label: "Bölge/Semt", name: "region", widget: "string"}
+      - {label: "Adres", name: "address", widget: "string", required: false}
+      - {label: "Telefon", name: "phone", widget: "string", required: false}
+      - {label: "Google Puanı", name: "rating", widget: "number", value_type: "float", min: 1, max: 5, required: false}
+      - {label: "Değerlendirme Sayısı", name: "reviews_count", widget: "number", value_type: "int", required: false}
+      - {label: "Fotoğraflar", name: "photos", widget: "list", field: {label: "Fotoğraf Linki/Yolu", name: "photo", widget: "image"}, required: false}
+      - {label: "Google Maps URL", name: "google_maps_url", widget: "string", required: false}
+      - {label: "Lokasyon", name: "location", widget: "object", required: false, fields: [
+          {label: "Enlem (Lat)", name: "lat", widget: "number", value_type: "float"},
+          {label: "Boylam (Lng)", name: "lng", widget: "number", value_type: "float"}
+      ]}
+      - {label: "Uzun Açıklama (Makale)", name: "body", widget: "markdown", required: false}
 
   - name: "rehber"
     label: "Gezi Rehberleri (Blog)"

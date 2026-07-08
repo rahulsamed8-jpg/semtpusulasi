@@ -1,0 +1,69 @@
+{
+  "$ref": "#/definitions/mekanlar",
+  "definitions": {
+    "mekanlar": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "region": {
+          "type": "string"
+        },
+        "category": {
+          "type": "string"
+        },
+        "address": {
+          "type": "string"
+        },
+        "rating": {
+          "type": "number"
+        },
+        "reviews_count": {
+          "type": "number"
+        },
+        "phone": {
+          "type": "string"
+        },
+        "website": {
+          "type": "string"
+        },
+        "google_maps_url": {
+          "type": "string"
+        },
+        "photos": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "location": {
+          "type": "object",
+          "properties": {
+            "lat": {
+              "type": "number"
+            },
+            "lng": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "lat",
+            "lng"
+          ],
+          "additionalProperties": false
+        },
+        "$schema": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "title",
+        "region",
+        "category"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

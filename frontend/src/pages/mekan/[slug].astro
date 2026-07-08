@@ -1,20 +1,20 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import dataRaw from '../../data/turizm_data.json';
-const data = dataRaw.places;
+import { getCollection } from 'astro:content';
 import { marked } from 'marked';
 import AdSensePlaceholder from '../../components/AdSensePlaceholder.astro';
 
 export async function getStaticPaths() {
-  return dataRaw.places.map((item) => {
+  const mekanlar = await getCollection('mekanlar');
+  return mekanlar.map((m) => {
     return {
-      params: { slug: item.slug },
-      props: { item },
+      params: { slug: m.slug },
+      props: { item: { slug: m.slug, seo_article: m.body, ...m.data } },
     };
   });
 }
 
-const { item } = Astro.props;
+const { item } = Astro.props as any;
 const articleHTML = item.seo_article ? marked.parse(item.seo_article) : null;
 const ogImage = item.photos && item.photos.length > 0 ? item.photos[0] : undefined;
 

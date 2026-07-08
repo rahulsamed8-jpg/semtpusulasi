@@ -1,7 +1,8 @@
-import dataRaw from '../data/turizm_data.json';
-const data = dataRaw.places;
+import { getCollection } from 'astro:content';
 
 export async function GET() {
+    const mekanlar = await getCollection('mekanlar');
+    const data = mekanlar.map(m => ({ slug: m.slug, ...m.data }));
     const searchData = data.map(item => ({
         name: item.name,
         slug: item.slug,
