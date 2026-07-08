@@ -10,6 +10,7 @@ photos:
   - /images/places/abdulun-yeri-karine-balik-restorant-doganbey-0.webp
   - /images/places/abdulun-yeri-karine-balik-restorant-doganbey-1.webp
   - /images/places/abdulun-yeri-karine-balik-restorant-doganbey-2.webp
+  - /images/places/ahmetbeyli-halk-plaji-ozdere-0.webp
 google_maps_url: https://maps.google.com/?cid=11447904316633756897
 location:
   lat: 37.6207842
